@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
+
 #include "HsOpenSSL.h"
 #include "openssl/aes.h"
 
@@ -43,10 +45,10 @@ data AESCtx = AESCtx
                 Mode
 
 foreign import ccall unsafe "memcpy"
-        _memcpy :: Ptr CUChar -> Ptr CChar -> CSize -> IO ()
+        _memcpy :: Ptr CUChar -> Ptr CChar -> CSize -> IO (Ptr CUChar)
 
 foreign import ccall unsafe "memset"
-        _memset :: Ptr CUChar -> CChar -> CSize -> IO ()
+        _memset :: Ptr CUChar -> CChar -> CSize -> IO (Ptr CUChar)
 
 foreign import ccall unsafe "AES_set_encrypt_key"
         _AES_set_encrypt_key :: Ptr CChar -> CInt -> Ptr AES_KEY -> IO CInt

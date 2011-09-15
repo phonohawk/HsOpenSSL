@@ -1,5 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE BangPatterns #-}
+{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 
 #include "HsOpenSSL.h"
 
@@ -147,10 +148,10 @@ newBN i = do
 -- to
 
 foreign import ccall unsafe "memcpy"
-        _copy_in :: ByteArray## -> Ptr () -> CSize -> IO ()
+        _copy_in :: ByteArray## -> Ptr () -> CSize -> IO (Ptr ())
 
 foreign import ccall unsafe "memcpy"
-        _copy_out :: Ptr () -> ByteArray## -> CSize -> IO ()
+        _copy_out :: Ptr () -> ByteArray## -> CSize -> IO (Ptr ())
 
 -- These are taken from Data.Binary's disabled fast Integer support
 data ByteArray = BA  !ByteArray##
