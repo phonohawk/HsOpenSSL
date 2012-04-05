@@ -49,11 +49,12 @@ import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.ByteString.Lazy.Internal as L8
 import Control.Applicative ((<$>))
-import Control.Exception (mask, mask_, bracket_, onException)
 import Foreign.C.Types (CChar)
 #if __GLASGOW_HASKELL__ >= 703
+import Control.Exception (mask, mask_, bracket_, onException)
 import Foreign.C.Types (CInt(..), CUInt(..), CSize(..))
 #else
+import Control.Exception (block, unblock, bracket_, onException)
 import Foreign.C.Types (CInt, CUInt, CSize)
 #endif
 import Foreign.Ptr (Ptr, castPtr, FunPtr)
@@ -106,10 +107,17 @@ foreign import ccall unsafe "HsOpenSSL_EVP_CIPHER_CTX_block_size"
 newCipherCtx :: IO CipherCtx
 newCipherCtx = do
   ctx <- mallocForeignPtrBytes (#size EVP_CIPHER_CTX)
+#if __GLASGOW_HASKELL__ >= 703
   mask_ $ do
     withForeignPtr ctx _cipher_ctx_init
     addForeignPtrFinalizer _cipher_ctx_cleanup ctx
   return $ CipherCtx ctx
+#else
+  block $ do
+    withForeignPtr ctx _cipher_ctx_init
+    addForeignPtrFinalizer _cipher_ctx_cleanup ctx
+  unblock $ return $ CipherCtx ctx
+#endif
 
 withCipherCtxPtr :: CipherCtx -> (Ptr EVP_CIPHER_CTX -> IO a) -> IO a
 withCipherCtxPtr (CipherCtx ctx) = withForeignPtr ctx
@@ -188,10 +196,17 @@ foreign import ccall unsafe "&EVP_MD_CTX_cleanup"
 newDigestCtx :: IO DigestCtx
 newDigestCtx = do
   ctx <- mallocForeignPtrBytes (#size EVP_MD_CTX)
+#if __GLASGOW_HASKELL__ >= 703
   mask_ $ do
     withForeignPtr ctx _md_ctx_init
     addForeignPtrFinalizer _md_ctx_cleanup ctx
   return $ DigestCtx ctx
+#else
+  block $ do
+    withForeignPtr ctx _md_ctx_init
+    addForeignPtrFinalizer _md_ctx_cleanup ctx
+  unblock $ return $ DigestCtx ctx
+#endif
 
 withDigestCtxPtr :: DigestCtx -> (Ptr EVP_MD_CTX -> IO a) -> IO a
 withDigestCtxPtr (DigestCtx ctx) = withForeignPtr ctx
@@ -288,10 +303,17 @@ wrapPKeyPtr :: Ptr EVP_PKEY -> IO VaguePKey
 wrapPKeyPtr = fmap VaguePKey . newForeignPtr _pkey_free
 
 createPKey :: (Ptr EVP_PKEY -> IO a) -> IO VaguePKey
+#if __GLASGOW_HASKELL__ >= 703
 createPKey f = mask $ \restore -> do
   ptr <- _pkey_new >>= failIfNull
   (restore $ f ptr >> return ()) `onException` _pkey_free' ptr
   wrapPKeyPtr ptr
+#else
+createPKey f = block $ do
+  ptr <- _pkey_new >>= failIfNull
+  (f ptr >> return ()) `onException` _pkey_free' ptr
+  unblock $ wrapPKeyPtr ptr
+#endif
 
 withPKeyPtr :: VaguePKey -> (Ptr EVP_PKEY -> IO a) -> IO a
 withPKeyPtr (VaguePKey pkey) = withForeignPtr pkey
