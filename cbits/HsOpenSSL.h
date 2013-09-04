@@ -27,7 +27,7 @@
  * hsc2hs so we can reach the cabal_macros.h from cbits.
  */
 #if !defined(MIN_VERSION_base)
-#  include "../dist/build/autogen/cabal_macros.h"
+#  include "autogen/cabal_macros.h"
 #endif
 
 /* OpenSSL ********************************************************************/
