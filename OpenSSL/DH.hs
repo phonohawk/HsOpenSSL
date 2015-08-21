@@ -17,7 +17,9 @@ module OpenSSL.DH
 import Data.Word (Word8)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Internal as BS
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative ((<$>))
+#endif
 import Foreign.Ptr (Ptr, nullPtr)
 #if MIN_VERSION_base(4,5,0)
 import Foreign.C.Types (CInt(..))
@@ -96,4 +98,3 @@ foreign import ccall unsafe "HsOpenSSL_DH_get_pub_key"
   _DH_get_pub_key :: Ptr DH_ -> IO (Ptr BIGNUM)
 foreign import ccall unsafe "HsOpenSSL_DH_length"
   _DH_length :: Ptr DH_ -> IO CInt
-

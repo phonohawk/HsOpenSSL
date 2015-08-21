@@ -52,7 +52,9 @@ import qualified Data.ByteString.Unsafe as B8
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.ByteString.Lazy.Internal as L8
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative ((<$>))
+#endif
 import Control.Exception (mask, mask_, bracket_, onException)
 import Foreign.C.Types (CChar)
 #if MIN_VERSION_base(4,5,0)

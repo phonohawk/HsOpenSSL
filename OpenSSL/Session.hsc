@@ -78,11 +78,10 @@ import Prelude hiding (
 import Control.Concurrent (threadWaitWrite, threadWaitRead, runInBoundThread)
 import Control.Concurrent.MVar
 import Control.Exception
-import Control.Applicative ((<$>), (<$))
 import Control.Monad (unless)
+import Data.Foldable (mapM_, forM_)
+import Data.Traversable (mapM)
 import Data.Typeable
-import Data.Foldable (Foldable, mapM_, forM_)
-import Data.Traversable (Traversable, mapM)
 import Data.Maybe (fromMaybe)
 import Data.IORef
 import Foreign
@@ -95,6 +94,12 @@ import qualified Data.ByteString.Lazy.Internal as L
 import System.IO.Unsafe
 import System.Posix.Types (Fd(..))
 import Network.Socket (Socket(..))
+
+#if !MIN_VERSION_base(4,8,0)
+import Control.Applicative ((<$>), (<$))
+import Data.Foldable (Foldable)
+import Data.Traversable (Traversable)
+#endif
 
 import OpenSSL.ERR
 import OpenSSL.EVP.PKey
