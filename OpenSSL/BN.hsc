@@ -339,7 +339,7 @@ prandIntegerUptoNMinusOneSuchThat :: (Integer -> Bool)  -- ^ a filter function
 prandIntegerUptoNMinusOneSuchThat f range = withBN range (\bnRange -> (do
   r <- newBN 0
   let try = do
-        _BN_rand_range (unwrapBN r) (unwrapBN bnRange) >>= failIf_ (/= 1)
+        _BN_pseudo_rand_range (unwrapBN r) (unwrapBN bnRange) >>= failIf_ (/= 1)
         i <- bnToInteger r
         if f i
            then return i
