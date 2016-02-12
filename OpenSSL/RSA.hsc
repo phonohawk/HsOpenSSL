@@ -28,15 +28,21 @@ module OpenSSL.RSA
     where
 #include "HsOpenSSL.h"
 import Control.Monad
+import Data.ByteString (ByteString)
+import qualified Data.ByteString as B (useAsCStringLen)
+import qualified Data.ByteString.Internal as BI (createAndTrim)
 import Data.Typeable
+import Foreign.C.String (CString)
 #if MIN_VERSION_base(4,5,0)
-import Foreign.C.Types (CInt(..))
+import Foreign.C.Types (CInt(..), CLong(..))
 #else
-import Foreign.C.Types (CInt)
+import Foreign.C.Types (CInt, CLong)
 #endif
 import Foreign.ForeignPtr (ForeignPtr, finalizeForeignPtr, newForeignPtr, withForeignPtr)
+import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr (FunPtr, Ptr, freeHaskellFunPtr, nullFunPtr, nullPtr)
 import Foreign.Storable (Storable(..))
+import GHC.Word (Word8)
 import OpenSSL.BN
 import OpenSSL.Utils
 import System.IO.Unsafe (unsafePerformIO)
@@ -232,7 +238,6 @@ rsaDMQ1 = peekMI (#peek RSA, dmq1)
 -- |@'rsaIQMP' privkey@ returns @q^-1 mod p@ of the key.
 rsaIQMP :: RSAKeyPair -> Maybe Integer
 rsaIQMP = peekMI (#peek RSA, iqmp)
-
 
 {- instances ---------------------------------------------------------------- -}
 
