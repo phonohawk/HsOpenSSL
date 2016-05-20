@@ -14,6 +14,7 @@ module OpenSSL.EVP.Internal (
     withNewCipherCtxPtr,
 
     CryptoMode(..),
+    cipherSetPadding,
     cipherInitBS,
     cipherUpdateBS,
     cipherFinalBS,
@@ -131,6 +132,16 @@ data CryptoMode = Encrypt | Decrypt
 fromCryptoMode :: Num a => CryptoMode -> a
 fromCryptoMode Encrypt = 1
 fromCryptoMode Decrypt = 0
+
+foreign import ccall unsafe "EVP_CIPHER_CTX_set_padding"
+  _SetPadding :: Ptr EVP_CIPHER_CTX -> CInt -> IO CInt
+
+cipherSetPadding :: CipherCtx -> Int -> IO CipherCtx
+cipherSetPadding ctx pad 
+  = do withCipherCtxPtr ctx $ \ctxPtr ->
+           _SetPadding ctxPtr (fromIntegral pad)
+               >>= failIf_ (/= 1)
+       return ctx
 
 foreign import ccall unsafe "EVP_CipherInit"
         _CipherInit :: Ptr EVP_CIPHER_CTX
