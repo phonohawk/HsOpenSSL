@@ -37,6 +37,7 @@ module OpenSSL.Session
   , fdConnection
   , addOption
   , removeOption
+  , setTlsextHostName
   , accept
   , tryAccept
   , connect
@@ -78,11 +79,10 @@ import Prelude hiding (
 import Control.Concurrent (threadWaitWrite, threadWaitRead, runInBoundThread)
 import Control.Concurrent.MVar
 import Control.Exception
-import Control.Applicative ((<$>), (<$))
 import Control.Monad (unless)
+import Data.Foldable (mapM_, forM_)
+import Data.Traversable (mapM)
 import Data.Typeable
-import Data.Foldable (Foldable, mapM_, forM_)
-import Data.Traversable (Traversable, mapM)
 import Data.Maybe (fromMaybe)
 import Data.IORef
 import Foreign
@@ -95,6 +95,12 @@ import qualified Data.ByteString.Lazy.Internal as L
 import System.IO.Unsafe
 import System.Posix.Types (Fd(..))
 import Network.Socket (Socket(..))
+
+#if !MIN_VERSION_base(4,8,0)
+import Control.Applicative ((<$>), (<$))
+import Data.Foldable (Foldable)
+import Data.Traversable (Traversable)
+#endif
 
 import OpenSSL.ERR
 import OpenSSL.EVP.PKey
@@ -379,6 +385,9 @@ foreign import ccall unsafe "HsOpenSSL_SSL_set_options"
 foreign import ccall unsafe "HsOpenSSL_SSL_clear_options"
     _SSL_clear_options :: Ptr SSL_ -> CLong -> IO CLong
 
+foreign import ccall unsafe "HsOpenSSL_SSL_set_tlsext_host_name"
+    _SSL_set_tlsext_host_name :: Ptr SSL_ -> CString -> IO CLong
+
 -- | Add a protocol option to the SSL connection.
 addOption :: SSL -> SSLOption -> IO ()
 addOption ssl opt =
@@ -390,6 +399,13 @@ removeOption :: SSL -> SSLOption -> IO ()
 removeOption ssl opt =
     withSSL ssl $ \sslPtr ->
         _SSL_clear_options sslPtr (optionToIntegral opt) >> return ()
+
+-- | Set host name for Server Name Indication (SNI)
+setTlsextHostName :: SSL -> String -> IO ()
+setTlsextHostName ssl h =
+    withSSL ssl $ \sslPtr ->
+    withCString h $ \ hPtr ->
+        _SSL_set_tlsext_host_name sslPtr hPtr >> return ()
 
 foreign import ccall "SSL_accept" _ssl_accept :: Ptr SSL_ -> IO CInt
 foreign import ccall "SSL_connect" _ssl_connect :: Ptr SSL_ -> IO CInt

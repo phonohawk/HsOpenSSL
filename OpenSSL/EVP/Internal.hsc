@@ -14,6 +14,7 @@ module OpenSSL.EVP.Internal (
     withNewCipherCtxPtr,
 
     CryptoMode(..),
+    cipherSetPadding,
     cipherInitBS,
     cipherUpdateBS,
     cipherFinalBS,
@@ -52,7 +53,9 @@ import qualified Data.ByteString.Unsafe as B8
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.ByteString.Lazy.Internal as L8
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative ((<$>))
+#endif
 import Control.Exception (mask, mask_, bracket_, onException)
 import Foreign.C.Types (CChar)
 #if MIN_VERSION_base(4,5,0)
@@ -131,6 +134,16 @@ data CryptoMode = Encrypt | Decrypt
 fromCryptoMode :: Num a => CryptoMode -> a
 fromCryptoMode Encrypt = 1
 fromCryptoMode Decrypt = 0
+
+foreign import ccall unsafe "EVP_CIPHER_CTX_set_padding"
+  _SetPadding :: Ptr EVP_CIPHER_CTX -> CInt -> IO CInt
+
+cipherSetPadding :: CipherCtx -> Int -> IO CipherCtx
+cipherSetPadding ctx pad 
+  = do withCipherCtxPtr ctx $ \ctxPtr ->
+           _SetPadding ctxPtr (fromIntegral pad)
+               >>= failIf_ (/= 1)
+       return ctx
 
 foreign import ccall unsafe "EVP_CipherInit"
         _CipherInit :: Ptr EVP_CIPHER_CTX

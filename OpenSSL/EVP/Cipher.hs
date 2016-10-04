@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                      #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 -- |An interface to symmetric cipher algorithms.
 module OpenSSL.EVP.Cipher
@@ -15,11 +16,14 @@ module OpenSSL.EVP.Cipher
     where
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Lazy.Char8 as L8
-import Data.Monoid
 import Foreign
 import Foreign.C
 import OpenSSL.Objects
 import OpenSSL.EVP.Internal
+
+#if !MIN_VERSION_base(4,8,0)
+import Data.Monoid
+#endif
 
 foreign import ccall unsafe "EVP_get_cipherbyname"
         _get_cipherbyname :: CString -> IO (Ptr EVP_CIPHER)
@@ -93,4 +97,3 @@ cipherLBS :: Cipher           -- ^ algorithm to use
 cipherLBS c key iv mode input
     = do ctx <- cipherInitBS c key iv mode
          cipherLazily ctx input
-

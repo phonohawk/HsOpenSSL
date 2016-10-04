@@ -1,3 +1,42 @@
+2016-10-04  Vladimir Shabanov  <vshabanoff@gmail.com>
+
+	* HsOpenSSL.cabal (Version): Bump version to 0.11.2.1
+
+	* HsOpenSSL.cabal (Build-Depends):
+	base >= 4.4 && < 5 (GHC >= 7.2) instead of == 4.* (GHC >= 6.10)
+
+	* OpenSSL/RSA.hsc: fixed incompatibility with GHC < 7.10
+
+	* .travis.yml: Added Travis Job, by Herbert Valerio Riedel @hvr (#8).
+
+2016-10-04  Vladimir Shabanov  <vshabanoff@gmail.com>
+
+	* HsOpenSSL.cabal (Version): Bump version to 0.11.2
+
+	* HsOpenSSL.cabal: New maintainer and GitHub repo path.
+
+	* HsOpenSSL.cabal: removed old-locale dependency (requires time >= 1.5).
+
+        * examples/Client.hs: Added client example, by @mirokuratczyk (#7).
+
+	* OpenSSL/EVP/Internal.hsc: Added cipherSetPadding function,
+	by @SX91 (#6).
+
+	* OpenSSL/BN.hsc: prandInteger functions now use BN_pseudo_rand_range,
+	by @Pamelloes (#5).
+
+	* OpenSSL/RSA.hsc, OpenSSL/X509.hs, OpenSSL/X509/Request.hs, Test/OpenSSL/RSA.hs, HsOpenSSL.cabal:
+	DER reading/writing for X509, X509Req & RSA,
+	by @newsham, @shak-mar, @afcady (#4)
+
+	* HsOpenSSL.cabal (Includes): Added openssl/asn1.h, by phadej (#3).
+
+	* HsOpenSSL.cabal (Build-Depends): Bump HUnit upper bound,
+	by phadej (#2).
+
+	* 10 files: Fixed GHC 7.10 warnings,
+	by Mikhail Glushenkov @23Skidoo (#1).
+
 2015-01-06  PHO  <pho@cielonegro.org>
 
 	* HsOpenSSL.cabal (Version): Bump version to 0.11.1.1

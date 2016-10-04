@@ -93,7 +93,7 @@ encodeBase64LBS inLBS
               remain                  = if B8.null leftover then
                                             remain'
                                         else
-					    L8.fromChunks [leftover] `L8.append` remain'
+                                            L8.fromChunks [leftover] `L8.append` remain'
               encodedBlock             = encodeBlock block
               encodedRemain            = encodeBase64LBS remain
           in
@@ -143,7 +143,7 @@ decodeBase64LBS inLBS
               remain                  = if B8.null leftover then
                                             remain'
                                         else
-					    L8.fromChunks [leftover] `L8.append` remain'
+                                            L8.fromChunks [leftover] `L8.append` remain'
               decodedBlock            = decodeBlock block
               decodedRemain           = decodeBase64LBS remain
           in

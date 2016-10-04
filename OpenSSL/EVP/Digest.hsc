@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                      #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 -- |An interface to message digest algorithms.
 module OpenSSL.EVP.Digest
@@ -18,7 +19,9 @@ import Data.ByteString.Internal (create)
 import Data.ByteString.Unsafe (unsafeUseAsCStringLen)
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Lazy.Char8 as L8
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative ((<$>))
+#endif
 import Foreign.C.String (CString, withCString)
 #if MIN_VERSION_base(4,5,0)
 import Foreign.C.Types (CChar(..), CInt(..), CSize(..), CUInt(..))
@@ -118,4 +121,3 @@ foreign import ccall unsafe "PKCS5_PBKDF2_HMAC_SHA1"
                           -> Ptr CChar -> CInt
                           -> CInt -> CInt -> Ptr CChar
                           -> IO CInt
-

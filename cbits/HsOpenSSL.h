@@ -93,5 +93,6 @@ long HsOpenSSL_SSL_CTX_set_options(SSL_CTX* ctx, long options);
 long HsOpenSSL_SSL_CTX_clear_options(SSL_CTX* ctx, long options);
 long HsOpenSSL_SSL_set_options(SSL* ssl, long options);
 long HsOpenSSL_SSL_clear_options(SSL* ssl, long options);
+long HsOpenSSL_SSL_set_tlsext_host_name(SSL* ssl, char* host_name);
 
 #endif

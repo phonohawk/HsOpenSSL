@@ -28,9 +28,6 @@ import           Foreign.C
 import           OpenSSL.BIO
 import           OpenSSL.BN
 import           OpenSSL.Utils
-#if !MIN_VERSION_time(1,5,0)
-import           System.Locale
-#endif
 
 {- ASN1_OBJECT --------------------------------------------------------------- -}
 
@@ -128,11 +125,7 @@ peekASN1Time time
              _ASN1_TIME_print bioPtr time
                   >>= failIf_ (/= 1)
          timeStr <- bioRead bio
-#if MIN_VERSION_time(1,5,0)
          case parseTimeM True locale "%b %e %H:%M:%S %Y %Z" timeStr of
-#else
-         case parseTime locale "%b %e %H:%M:%S %Y %Z" timeStr of
-#endif
            Just utc -> return utc
            Nothing  -> fail ("peekASN1Time: failed to parse time string: " ++ timeStr)
     where
@@ -144,17 +137,12 @@ peekASN1Time time
                                             , "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
                                             ]
                                ]
-#if !MIN_VERSION_time(1,5,0)
-               , intervals   = undefined
-#endif
                , amPm        = undefined
                , dateTimeFmt = undefined
                , dateFmt     = undefined
                , timeFmt     = undefined
                , time12Fmt   = undefined
-#if MIN_VERSION_time(1,5,0)
                , knownTimeZones = []
-#endif
                }
 
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                      #-}
 {-# LANGUAGE EmptyDataDecls           #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_HADDOCK prune             #-}
@@ -26,7 +27,9 @@ module OpenSSL.X509.Store
     , getStoreCtxChain
     )
     where
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative ((<$>))
+#endif
 import Control.Exception (throwIO, mask_)
 import Foreign
 import Foreign.C
@@ -142,4 +145,3 @@ getStoreCtxChain :: X509StoreCtx -> IO [X509]
 getStoreCtxChain ctx = withX509StoreCtxPtr ctx $ \pCtx -> do
   stack <- _store_ctx_get_chain pCtx
   (`mapStack` stack) $ \pCert -> mask_ $ _x509_ref pCert >> wrapX509 pCert
-

@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                      #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 -- |Message signing using asymmetric cipher and message digest
 -- algorithm. This is an opposite of "OpenSSL.EVP.Verify".
@@ -10,7 +11,9 @@ module OpenSSL.EVP.Sign
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Internal as B8
 import qualified Data.ByteString.Lazy.Char8 as L8
+#if !MIN_VERSION_base(4,8,0)
 import           Control.Applicative ((<$>))
+#endif
 import           Foreign
 import           Foreign.C
 import           OpenSSL.EVP.Digest
@@ -64,4 +67,3 @@ signLBS md pkey input
     = do ctx <- digestLazily md input
          sig <- signFinal ctx pkey
          return $ L8.fromChunks [sig]
-

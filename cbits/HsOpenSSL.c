@@ -282,6 +282,15 @@ long HsOpenSSL_SSL_set_options(SSL* ssl, long options) {
     return SSL_set_options(ssl, options);
 }
 
+/* OpenSSL < 1.0.0 does not have SSL_set_tlsext_host_name() */
+long HsOpenSSL_SSL_set_tlsext_host_name(SSL* ssl, char* host_name) {
+#if defined(SSL_set_tlsext_host_name)
+    return SSL_set_tlsext_host_name(ssl, host_name);
+#else
+    return 0;
+#endif
+}
+
 /* OpenSSL < 0.9.8m does not have SSL_clear_options() */
 long HsOpenSSL_SSL_clear_options(SSL* ssl, long options) {
 #if defined(SSL_clear_options)

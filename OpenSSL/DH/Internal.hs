@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                      #-}
 {-# LANGUAGE EmptyDataDecls           #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 module OpenSSL.DH.Internal (
@@ -14,10 +15,13 @@ module OpenSSL.DH.Internal (
     asDHP
   ) where
 
-import Control.Applicative ((<$>))
 import Foreign.Ptr (Ptr)
 import Foreign.ForeignPtr (ForeignPtr, withForeignPtr)
 import qualified Foreign.Concurrent as FC
+
+#if !MIN_VERSION_base(4,8,0)
+import Control.Applicative ((<$>))
+#endif
 
 data DH_
 newtype DHP = DHP (ForeignPtr DH_)
@@ -50,4 +54,3 @@ asDHP (DH fp) = DHP fp
 
 foreign import ccall "DH_free"
   _DH_free :: Ptr DH_ -> IO ()
-
