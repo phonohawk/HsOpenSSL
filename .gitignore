@@ -10,3 +10,4 @@ examples/Server
 
 .cabal-sandbox
 cabal.sandbox.config
+.stack-work/

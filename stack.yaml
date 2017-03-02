@@ -1,0 +1,8 @@
+resolver: lts-8.3
+
+packages:
+- '.'
+
+flags:
+  HsOpenSSL:
+    fast-bignum: false

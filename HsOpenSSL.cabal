@@ -54,7 +54,7 @@ Library
         bytestring >= 0.9   && < 0.11,
         network    >= 2.1   && < 2.7,
         old-locale >= 1.0   && < 1.1,
-        time       >= 1.1.1 && < 1.6
+        time       >= 1.1.1 && < 1.9
         -- old-locale is only needed if time < 1.5, but Cabal does not
         -- allow us to express conditional dependencies like this.
 
@@ -136,6 +136,19 @@ Test-Suite test-cipher
 Test-Suite test-dsa
     Type:    exitcode-stdio-1.0
     Main-Is: Test/OpenSSL/DSA.hs
+    Build-Depends:
+        HsOpenSSL,
+        HUnit                >= 1.0 && < 1.3,
+        base                 == 4.*,
+        bytestring           >= 0.9 && < 0.11,
+        test-framework       >= 0.8 && < 0.9,
+        test-framework-hunit >= 0.3 && < 0.4
+    GHC-Options:
+        -Wall
+
+Test-Suite test-rsa
+    Type:    exitcode-stdio-1.0
+    Main-Is: Test/OpenSSL/RSA.hs
     Build-Depends:
         HsOpenSSL,
         HUnit                >= 1.0 && < 1.3,

@@ -24,19 +24,28 @@ module OpenSSL.RSA
     , rsaIQMP
     , rsaCopyPublic
     , rsaKeyPairFinalize -- private
+      -- * DER encoding
+    , fromDERPub
+    , toDERPub
     )
     where
 #include "HsOpenSSL.h"
 import Control.Monad
+import Data.ByteString (ByteString)
+import qualified Data.ByteString as B (useAsCStringLen)
+import qualified Data.ByteString.Internal as BI (createAndTrim)
 import Data.Typeable
+import Foreign.C.String (CString)
 #if MIN_VERSION_base(4,5,0)
-import Foreign.C.Types (CInt(..))
+import Foreign.C.Types (CInt(..), CLong(..))
 #else
-import Foreign.C.Types (CInt)
+import Foreign.C.Types (CInt, CLong)
 #endif
 import Foreign.ForeignPtr (ForeignPtr, finalizeForeignPtr, newForeignPtr, withForeignPtr)
+import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr (FunPtr, Ptr, freeHaskellFunPtr, nullFunPtr, nullPtr)
 import Foreign.Storable (Storable(..))
+import GHC.Word (Word8)
 import OpenSSL.BN
 import OpenSSL.Utils
 import System.IO.Unsafe (unsafePerformIO)
@@ -233,6 +242,30 @@ rsaDMQ1 = peekMI (#peek RSA, dmq1)
 rsaIQMP :: RSAKeyPair -> Maybe Integer
 rsaIQMP = peekMI (#peek RSA, iqmp)
 
+{- DER encoding ------------------------------------------------------------- -}
+
+foreign import ccall unsafe "d2i_RSAPublicKey"
+        _fromDERPub :: Ptr (Ptr RSA) -> Ptr CString -> CLong -> IO (Ptr RSA)
+
+foreign import ccall unsafe "i2d_RSAPublicKey"
+        _toDERPub :: Ptr RSA -> Ptr (Ptr Word8) -> IO CInt
+
+-- |Parse a public key from ASN.1 DER format
+fromDERPub :: ByteString -> Maybe RSAPubKey
+fromDERPub bs = unsafePerformIO . usingConvedBS $ \(csPtr, ci) -> do
+    rsaPtr <- _fromDERPub nullPtr csPtr ci
+    if rsaPtr == nullPtr then return Nothing else absorbRSAPtr rsaPtr
+    where usingConvedBS io = B.useAsCStringLen bs $ \(cs, len) ->
+              alloca $ \csPtr -> poke csPtr cs >> io (csPtr, fromIntegral len)
+
+-- |Dump a public key to ASN.1 DER format
+toDERPub :: RSAKey k => k -> ByteString
+toDERPub k = unsafePerformIO $ do
+    requiredSize <- withRSAPtr k $ flip _toDERPub nullPtr
+    BI.createAndTrim (fromIntegral requiredSize) $ \ptr ->
+        alloca $ \pptr ->
+            (fromIntegral <$>) $ withRSAPtr k $ \key ->
+                poke pptr ptr >> _toDERPub key pptr
 
 {- instances ---------------------------------------------------------------- -}
 
