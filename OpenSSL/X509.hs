@@ -16,6 +16,8 @@ module OpenSSL.X509
     , unsafeX509ToPtr -- private
     , touchX509 -- private
 
+    , writeDerX509
+    , readDerX509
     , compareX509
 
     , signX509
@@ -140,6 +142,16 @@ foreign import ccall unsafe "X509_sign"
 foreign import ccall unsafe "X509_verify"
         _verify :: Ptr X509_ -> Ptr EVP_PKEY -> IO CInt
 
+foreign import ccall safe "i2d_X509_bio"
+        _write_bio_X509 :: Ptr BIO_
+                        -> Ptr X509_
+                        -> IO CInt
+
+foreign import ccall safe "d2i_X509_bio"
+        _read_bio_X509 :: Ptr BIO_
+                       -> Ptr (Ptr X509_)
+                       -> IO (Ptr X509_)
+
 -- |@'newX509'@ creates an empty certificate. You must set the
 -- following properties to and sign it (see 'signX509') to actually
 -- use the certificate.
@@ -178,6 +190,33 @@ unsafeX509ToPtr (X509 x509) = Unsafe.unsafeForeignPtrToPtr x509
 
 touchX509 :: X509 -> IO ()
 touchX509 (X509 x509) = touchForeignPtr x509
+
+writeX509' :: BIO -> X509 -> IO ()
+writeX509' bio x509
+    = withBioPtr bio   $ \ bioPtr ->
+      withX509Ptr x509 $ \ x509Ptr ->
+      _write_bio_X509 bioPtr x509Ptr
+           >>= failIf (< 0)
+           >>  return ()
+
+-- |@'writeDerX509' cert@ writes an X.509 certificate to DER string.
+writeDerX509 :: X509 -> IO String
+writeDerX509 x509
+    = do mem <- newMem
+         writeX509' mem x509
+         bioRead mem
+
+readX509' :: BIO -> IO X509
+readX509' bio
+    = withBioPtr bio $ \ bioPtr ->
+      _read_bio_X509 bioPtr nullPtr 
+           >>= failIfNull
+           >>= wrapX509 
+
+-- |@'readDerX509' der@ reads in a certificate.
+readDerX509 :: String -> IO X509
+readDerX509 derStr
+    = newConstMem derStr >>= readX509'
 
 -- |@'compareX509' cert1 cert2@ compares two certificates.
 compareX509 :: X509 -> X509 -> IO Ordering
